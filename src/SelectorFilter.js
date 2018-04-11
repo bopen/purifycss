@@ -19,22 +19,24 @@ const hasWhitelistMatch = (selector, whitelist) => {
 }
 
 class SelectorFilter {
-    constructor(contentWords, whitelist) {
+    constructor(contentWords, whitelist, blacklist) {
         this.contentWords = contentWords
         this.rejectedSelectors = []
         this.patternWhitelist = []
-        this.parseWhitelist(whitelist)
+        this.patternBlacklist = []
+        this.parseWhitelist(blacklist, this.patternBlacklist)
+        this.parseWhitelist(whitelist, this.patternWhitelist)
     }
 
     initialize(CssSyntaxTree) {
         CssSyntaxTree.on("readRule", this.parseRule.bind(this))
     }
 
-    parseWhitelist(whitelist) {
+    parseWhitelist(whitelist, patternList) {
         whitelist.forEach(whitelistSelector => {
             if (isWildcardWhitelistSelector(whitelistSelector)) {
                 // If '*button*' then push 'button' onto list.
-                this.patternWhitelist.push(
+                patternList.push(
                     whitelistSelector.substr(1, whitelistSelector.length - 2)
                 )
             }
@@ -42,7 +44,7 @@ class SelectorFilter {
                 let regexParser = /^\/(.*)\/(.*)$/
                 let groups = whitelistSelector.match( regexParser )
                 let regex = new RegExp( groups[1], groups[2] )
-                this.patternWhitelist.push(regex)
+                patternList.push(regex)
             } else {
                 getAllWordsInSelector(whitelistSelector).forEach(word => {
                     this.contentWords[word] = true
@@ -59,11 +61,16 @@ class SelectorFilter {
         let contentWords = this.contentWords,
             rejectedSelectors = this.rejectedSelectors,
             patternWhitelist = this.patternWhitelist,
+            patternBlacklist = this.patternBlacklist,
             usedSelectors = []
 
         selectors.forEach(selector => {
             if (hasWhitelistMatch(selector, patternWhitelist)) {
                 usedSelectors.push(selector)
+                return
+            }
+            if(hasWhitelistMatch(selector, patternBlacklist)) {
+                rejectedSelectors.push(selector)
                 return
             }
             let words = getAllWordsInSelector(selector),
