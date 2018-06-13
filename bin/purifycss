@@ -34,6 +34,12 @@ var argv = yargs
         type: "array",
         default: []
     })
+    .option("b", {
+        alias: "blacklist",
+        description: "List of classes that should be removed",
+        type: "array",
+        default: []
+    })
     .demandCommand(2)
     .help()
     .alias("h", "help")
@@ -54,7 +60,8 @@ var options = {
     info: argv.info,
     rejected: argv.rejected,
     output: argv.out,
-    whitelist: argv.whitelist
+    whitelist: argv.whitelist,
+	blacklist: argv.blacklist
 }
 
 if (options.output) {

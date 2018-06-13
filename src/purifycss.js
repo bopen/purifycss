@@ -12,6 +12,7 @@ const OPTIONS = {
     info: false,
     rejected: false,
     whitelist: [],
+    blacklist: [],
     cleanCssOptions: {}
 }
 
@@ -37,7 +38,7 @@ const purify = (searchThrough, css, options, callback) => {
         content = FileUtil.filesToSource(searchThrough, "content")
     PrintUtil.startLog(minify(cssString).length)
     let wordsInContent = getAllWordsInContent(content),
-        selectorFilter = new SelectorFilter(wordsInContent, options.whitelist),
+        selectorFilter = new SelectorFilter(wordsInContent, options.whitelist, options.blacklist),
         tree = new CssTreeWalker(cssString, [selectorFilter])
     tree.beginReading()
     let source = tree.toString()
